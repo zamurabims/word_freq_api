@@ -28,13 +28,7 @@ async def export_report(
     file: UploadFile = File(..., description="Текстовый файл (UTF-8)"),
     executor: ProcessPoolExecutor = Depends(get_executor),
 ) -> Response:
-    """
-    Принимает текстовый файл любого размера, выполняет лемматизацию
-    и возвращает xlsx с тремя столбцами:
-    - Словоформа (лемма)
-    - Кол-во в документе
-    - Кол-во по строкам (через запятую)
-    """
+    
     _validate_upload(file)
 
     use_case = ExportReportUseCase(executor=executor)

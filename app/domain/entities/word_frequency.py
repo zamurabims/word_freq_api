@@ -5,7 +5,6 @@ from collections import defaultdict
 
 @dataclass
 class WordFrequency:
-    """Aggregate: частота слова (леммы) во всём документе и по строкам."""
     lemma: str
     total_count: int = 0
     line_counts: DefaultDict[int, int] = field(default_factory=lambda: defaultdict(int))

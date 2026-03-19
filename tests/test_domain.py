@@ -1,7 +1,3 @@
-"""
-Юнит-тесты (запуск: pytest tests/)
-Не требуют внешних зависимостей кроме стандартной библиотеки Python.
-"""
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))

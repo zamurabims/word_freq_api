@@ -4,7 +4,6 @@ from app.domain.services.lemmatizer_port import ILemmatizer
 
 
 class FrequencyAnalysisService:
-    """Domain-сервис: накапливает статистику по леммам из потока строк."""
 
     def __init__(self, lemmatizer: ILemmatizer) -> None:
         self._lemmatizer = lemmatizer
@@ -13,11 +12,7 @@ class FrequencyAnalysisService:
         self,
         lines: Iterator[str],
     ) -> tuple[Dict[str, WordFrequency], int]:
-        """
-        Обходит строки документа и возвращает:
-          - словарь {лемма -> WordFrequency}
-          - общее количество строк
-        """
+        
         stats: Dict[str, WordFrequency] = {}
         total_lines = 0
 

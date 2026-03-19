@@ -9,14 +9,11 @@ from app.infrastructure.nlp.pymorphy3_lemmatizer import Pymorphy3Lemmatizer
 
 
 def _analyze_in_worker(lines: list[str]) -> tuple[dict, int]:
-    """
-    Запускается в отдельном процессе (ProcessPoolExecutor),
-    чтобы не блокировать event loop при CPU-интенсивной лемматизации.
-    """
+   
     lemmatizer = Pymorphy3Lemmatizer()
     service = FrequencyAnalysisService(lemmatizer)
     stats, total_lines = service.analyze(iter(lines))
-    # Конвертируем в сериализуемый формат для передачи между процессами
+    
     serializable = {
         lemma: (wf.total_count, dict(wf.line_counts))
         for lemma, wf in stats.items()
@@ -25,15 +22,9 @@ def _analyze_in_worker(lines: list[str]) -> tuple[dict, int]:
 
 
 class ExportReportUseCase:
-    """
-    Use-case: принимает поток строк файла, запускает анализ в фоне,
-    возвращает готовый xlsx как байты.
+   
 
-    Тяжёлая CPU-работа (лемматизация) вынесена в ProcessPoolExecutor,
-    что позволяет FastAPI обрабатывать другие запросы параллельно.
-    """
-
-    CHUNK_LINES = 5_000  # строк в одном батче
+    CHUNK_LINES = 5_000  
 
     def __init__(self, executor: ProcessPoolExecutor) -> None:
         self._executor = executor
@@ -42,7 +33,7 @@ class ExportReportUseCase:
     async def execute(self, line_stream: AsyncIterator[str]) -> bytes:
         loop = asyncio.get_running_loop()
 
-        # Собираем строки батчами и отправляем в процесс
+       
         all_serialized: dict[str, tuple[int, dict[int, int]]] = {}
         total_lines = 0
         batch: list[str] = []
@@ -64,7 +55,7 @@ class ExportReportUseCase:
             self._merge(all_serialized, partial, total_lines)
             total_lines += n
 
-        # Десериализуем обратно в WordFrequency для построения отчёта
+        
         from app.domain.entities.word_frequency import WordFrequency
         from collections import defaultdict
 
@@ -75,7 +66,7 @@ class ExportReportUseCase:
             wf.line_counts = defaultdict(int, {int(k): v for k, v in line_counts_dict.items()})
             stats[lemma] = wf
 
-        # Генерация xlsx — в отдельном потоке (I/O bound)
+        
         xlsx_bytes = await loop.run_in_executor(
             None, self._excel_builder.build, stats, total_lines
         )
@@ -87,7 +78,7 @@ class ExportReportUseCase:
         source: dict[str, tuple[int, dict[int, int]]],
         line_offset: int,
     ) -> None:
-        """Объединяет батч-результаты, корректируя индексы строк."""
+       
         for lemma, (count, line_counts) in source.items():
             adjusted = {k + line_offset: v for k, v in line_counts.items()}
             if lemma not in target:
